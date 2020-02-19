@@ -16,9 +16,9 @@ function extenso(num){
 	var tamanho = num.length; //tamanho da string de entrada
 	var flagE = 0; //para saber se a proxima palavra necessita de "e "
 	var ex = [
-        ["zero", "um", "dois", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"],
+        ["", "um", "dois", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"],
         ["dez", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"],
-        ["cem", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"],
+        ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"],
     ];
 
     //tratamentos de entradas invalidas
@@ -43,6 +43,13 @@ function extenso(num){
         return 2;
     }
 
+    //tratamento do "zero"
+    if (num=="0" || num=="00" || num=="000" || num=="0000" || num=="00000"
+        || num=="-0" || num=="-00" || num=="-000" || num=="-0000" 
+        || num=="-00000") {
+        return "zero";
+    }
+
     //tratamento do "menos"
     if (num[0] == '-') {
     	saida = saida + "menos ";
@@ -58,13 +65,13 @@ function extenso(num){
 			if (num[1] != '0') {
 				saida = saida + "e " + ex[0][Number(num[1])] + " ";  
 			}
-            saida = saida + "mil ";
+            saida = saida + "mil";
             flagE = 1;
 		}
 		//adicionando de onze a dezenove
 		else if(num[0] != '0'){
 			saida = saida + ex[0][Number(num[1]) + 10] + " ";
-            saida = saida + "mil ";
+            saida = saida + "mil";
             flagE = 1;
 		}
 		//se primeiro digito for zero
@@ -72,7 +79,7 @@ function extenso(num){
             //se o segundo digito for diferente de zero
             if (num[1] != '0') {
                 saida = saida + ex[0][Number(num[1])] + " ";
-                saida = saida + "mil ";
+                saida = saida + "mil";
                 flagE = 1;
             }
 		}
@@ -82,27 +89,36 @@ function extenso(num){
 	}
     //tratamento para caso a string de entrada tenha tamanho 4
 	else if (tamanho == 4) {
-		if (num[0] != '0') {
+		if (num[0]!='0' && num[0]!='1') {
 			saida = saida + ex[0][Number(num[0])] + " ";
-			saida = saida + "mil ";
+			saida = saida + "mil";
 			flagE = 1;
 		}
+        else if (num[0]=='1') {
+            saida = saida + "mil";
+            flagE = 1;
+        }
 		num = num.substring(1);
     	tamanho = 3;
     }
 
     //tratamento para caso a string de entrada tenha tamanho 3
     if (tamanho == 3) {
-    	if (flagE == 1) {
-    		saida = saida + "e ";
+    	if (flagE==1 && num!="000") {
+    		saida = saida + " e ";
     		flagE = 0;
     	}
     	if (num == "100"){
-    		saida = saida + ex[2][0];
+    		saida = saida + "cem";
     	}
+        else if(num[1]=='0' && num[2]=='0'){
+            saida = saida + ex[2][Number(num[0])];
+        }
     	else{
-    		saida = saida + ex[2][Number(num[0])] + " ";
-    		flagE = 1;
+    		saida = saida + ex[2][Number(num[0])];
+    		if(num[0]!='0'){
+                flagE = 1;
+            }
     		num = num.substring(1);
     		tamanho = 2;
     	}
@@ -110,29 +126,33 @@ function extenso(num){
     }
     //tratamento para caso a string de entrada tenha tamanho 2
     if (tamanho == 2) {
-    	if (flagE == 1) {
-    		saida = saida + "e ";
+    	if (flagE==1 && num!="00") {
+    		saida = saida + " e ";
     		flagE = 0;
     	}
+        if(num[0] == '0'){
+            num = num.substring(1);
+            tamanho = 1;
+        }
     	//adicionando de vinte a noventa
-    	if(num[0] != '1' && num[0] != '0'){
+    	else if(num[0] != '1' && num[0] != '0'){
     		saida = saida + ex[1][Number(num[0]) - 1];
-    		//adicionando "e um" ate "e nove"
-    		if (num[1] != '0') {
-    			saida = saida + "e " + ex[0][Number(num[1])];
-    		}
+            flagE = 1;
+            num = num.substring(1);
+            tamanho = 1;
     	}
     	//adicionando de onze a dezenove
     	else if(num[0] != '0'){
-    		saida = saida + ex[0][Number(num[1]) + 10] + " ";
-    	}
-    	//se primeiro digito for zero
-    	else {
-    		saida = saida + ex[0][Number(num[1])] + " ";
+    		saida = saida + ex[0][Number(num[1]) + 10];
     	}
     }
+
     //tratamento para caso a string de entrada tenha tamanho 1
     if (tamanho == 1) {
+        if (flagE==1 && num!="0") {
+            saida = saida + " e ";
+            flagE = 0;
+        }
     	saida = saida + ex[0][Number(num[0])];
     }
 
@@ -164,10 +184,10 @@ const ip = 'localhost'
 const server = http.createServer((req, res) => {
   	ext = extenso(req.url.substring(1));
     if(ext == 1){
-        res.end("path com formato errado")
+        res.end("path com formato errado");
     }
     else if (ext == 2) {
-        res.end("numero de path muito alto")
+        res.end("numero de path muito grande");
     }
     else{
         res.end(preparaJSON(ext));
